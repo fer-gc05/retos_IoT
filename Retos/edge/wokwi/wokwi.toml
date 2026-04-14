@@ -1,0 +1,7 @@
+# Si abres solo esta carpeta como workspace, estas rutas son correctas.
+# Si abres la carpeta padre Retos/, usa el wokwi.toml que está en Retos/wokwi.toml
+# Antes de simular: pio run  → genera .pio/build/esp32dev/firmware.bin
+[wokwi]
+version = 1
+firmware = ".pio/build/esp32dev/firmware.bin"
+elf = ".pio/build/esp32dev/firmware.elf"

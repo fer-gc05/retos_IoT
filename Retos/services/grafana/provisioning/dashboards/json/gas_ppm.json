@@ -1,0 +1,236 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-gas"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 45
+              },
+              {
+                "color": "red",
+                "value": 55
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb-gas"
+          },
+          "query": "from(bucket: \"gas_readings\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gas\")\n  |> filter(fn: (r) => r[\"_field\"] == \"gas_index\")\n  |> group()\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Indice de gas (%)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-gas"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "Normal"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "ALERTA"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb-gas"
+          },
+          "query": "from(bucket: \"gas_readings\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gas\")\n  |> filter(fn: (r) => r[\"_field\"] == \"gas_index\")\n  |> group()\n  |> last()\n  |> map(fn: (r) => ({ r with _value: if r._value > 55.0 then 1.0 else 0.0 }))",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado de seguridad",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb-gas"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "drawStyle": "line",
+            "fillOpacity": 18,
+            "lineWidth": 2,
+            "pointSize": 2,
+            "showPoints": "auto"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 55
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb-gas"
+          },
+          "query": "from(bucket: \"gas_readings\")\n  |> range(start: -2m)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"gas\")\n  |> filter(fn: (r) => r[\"_field\"] == \"gas_index\")\n  |> aggregateWindow(every: 1s, fn: last, createEmpty: false)\n  |> yield(name: \"gas_index_live\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Tendencia indice gas (%)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "2s",
+  "schemaVersion": 38,
+  "tags": [
+    "iot",
+    "gas",
+    "reto3"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "America/Bogota",
+  "title": "Deteccion de gas — Wokwi en tiempo real",
+  "uid": "gas-ppm-dash",
+  "version": 4
+}

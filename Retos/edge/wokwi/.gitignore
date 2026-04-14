@@ -1,0 +1,4 @@
+.pio/
+.platformio/
+.venv/
+.vscode/.browse.c_cpp.db*

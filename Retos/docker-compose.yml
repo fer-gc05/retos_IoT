@@ -1,0 +1,171 @@
+# ============================================================
+#  Sistema IoT — Detección de Fuga de Gas
+#  Docker Compose — Reto 3
+#  Stack backend: Mosquitto · Node-RED · InfluxDB · Grafana
+#  Borde / simulación: proyecto Wokwi en edge/wokwi/ (no incluido aquí)
+# ============================================================
+
+networks:
+  iot_net:
+    driver: bridge
+
+volumes:
+  mosquitto_data:
+  mosquitto_logs:
+  nodered_data:
+  influxdb_data:
+  influxdb_config:
+  grafana_data:
+
+services:
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: iot_mosquitto
+    restart: unless-stopped
+    networks:
+      - iot_net
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./services/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./services/mosquitto/config/passwd:/mosquitto/config/passwd:ro
+      - ./services/mosquitto/config/acl.conf:/mosquitto/config/acl.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-u", "admin", "-P", "admin123", "-W", "12"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 25s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nodered:
+    image: nodered/node-red:3.1
+    container_name: iot_nodered
+    restart: unless-stopped
+    networks:
+      - iot_net
+    ports:
+      - "1880:1880"
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    environment:
+      - TZ=America/Bogota
+      - NODE_RED_ENABLE_PROJECTS=false
+    volumes:
+      - nodered_data:/data
+      - ./services/nodered/flows.json:/data/flows.json
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:1880/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: iot_influxdb
+    restart: unless-stopped
+    networks:
+      - iot_net
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123456
+      - DOCKER_INFLUXDB_INIT_ORG=iot_gas
+      - DOCKER_INFLUXDB_INIT_BUCKET=gas_readings
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-token-iot-gas
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: iot_grafana
+    restart: unless-stopped
+    networks:
+      - iot_net
+    ports:
+      - "3000:3000"
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
+      - GF_LOG_LEVEL=warn
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./services/grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Simulador Python (opcional). Arranque: docker compose --profile python-sim up -d
+  sensor_simulator:
+    profiles:
+      - python-sim
+    image: python:3.11-slim
+    container_name: iot_sensor_sim
+    restart: unless-stopped
+    networks:
+      - iot_net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - MQTT_USER=sensor
+      - MQTT_PASS=sensor123
+      - MQTT_TOPIC=casa/gas/ppm
+      - ALERT_TOPIC=casa/gas/alerta
+      - PPM_THRESHOLD=300
+      - PUBLISH_INTERVAL=5
+    volumes:
+      - ./tools/simulator/sensor_sim.py:/app/sensor_sim.py:ro
+      - ./tools/simulator/requirements.txt:/app/requirements.txt:ro
+    command: >
+      sh -c "pip install -q -r /app/requirements.txt && python /app/sensor_sim.py"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"

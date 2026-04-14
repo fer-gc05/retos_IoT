@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: InfluxDB-Gas
+    uid: influxdb-gas
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    isDefault: true
+    jsonData:
+      version: Flux
+      organization: iot_gas
+      defaultBucket: gas_readings
+      tlsSkipVerify: true
+    secureJsonData:
+      token: my-super-secret-token-iot-gas
