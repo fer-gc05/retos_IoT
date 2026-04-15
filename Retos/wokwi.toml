@@ -1,7 +1,0 @@
-# Usa estas rutas si abres la carpeta Retos/ en VS Code (recomendado).
-# Compila antes: Terminal → Run Task → "PlatformIO: compilar firmware (edge/wokwi)"
-# o: cd edge/wokwi && pio run
-[wokwi]
-version = 1
-firmware = "edge/wokwi/.pio/build/esp32dev/firmware.bin"
-elf = "edge/wokwi/.pio/build/esp32dev/firmware.elf"
