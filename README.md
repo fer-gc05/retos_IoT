@@ -126,6 +126,15 @@ Servicios esperados:
 
 **Firmware Wokwi/ESP32**
 
+- Compilar firmware localmente:
+
+```bash
+cd Retos/edge/wokwi
+chmod +x build_firmware.sh
+./build_firmware.sh
+```
+
+- Luego abrir el diagrama/simulacion en Wokwi y ejecutar la corrida para emular el comportamiento real del dispositivo.
 - Codigo en `Retos/edge/wokwi/src/main.cpp`.
 - Publica en topicos:
   - `casa/gas/ppm`
