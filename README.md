@@ -156,18 +156,4 @@ Servicios esperados:
 2. **Latencia baja vs robustez de buffer:** en simulador el buffer es en memoria (mas simple) y en firmware el control de reintentos es acotado.
 3. **Entrega rapida vs complejidad operacional:** stack completo en Compose facilita la demo, pero agrega consumo y configuracion de multiples servicios.
 
-## 11) Reto 3 - Estado de cumplimiento
-
-- **Documentacion y vistas:** cubiertas con C4 y documentos de retos.
-- **Evaluacion ATAM simplificada:** incorporada en analisis de drivers, riesgos y trade-offs.
-- **Docker Compose + monitoreo:** implementado en `Retos/docker-compose.yml` y `Retos/tools/scripts/monitor_health.py`.
-- **Portafolio GitHub:** este README + diagramas + ADRs + guias de ejecucion.
-- **Demo Day:** pendiente de enlace final a video/presentacion del equipo.
-
-## 12) Enlaces de demo (completar por el equipo)
-
-- **Video Reto 1 (3 min):** `PENDIENTE`
-- **Video Reto 2 (5 min):** `PENDIENTE`
-- **Video/Poster final (2 min):** `PENDIENTE`
-- **Presentacion Demo Day (10-12 min):** `PENDIENTE`
 
