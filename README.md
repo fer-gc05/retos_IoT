@@ -148,7 +148,6 @@ Servicios esperados:
 - [ ] Escritura de puntos en InfluxDB.
 - [ ] Dashboard mostrando valor en tiempo real e historico.
 - [ ] Alertas emitidas cuando el umbral es superado.
-- [ ] `monitor_health.py` reportando disponibilidad integral.
 
 ## 10) Trade-offs (resumen)
 
